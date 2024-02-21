@@ -121,6 +121,61 @@ class Gmail(object):
 
         return self._service
 
+    def insert_message(
+        self,
+        sender: str,
+        to: str,
+        subject: str = '',
+        msg_html: Optional[str] = None,
+        msg_plain: Optional[str] = None,
+        cc: Optional[List[str]] = None,
+        bcc: Optional[List[str]] = None,
+        attachments: Optional[List[str]] = None,
+        signature: bool = False,
+        user_id: str = 'me'
+    ) -> Message:
+        """
+        Inserts an email.
+
+        Args:
+            sender: The email address the message is being sent from.
+            to: The email address the message is being sent to.
+            subject: The subject line of the email.
+            msg_html: The HTML message of the email.
+            msg_plain: The plain text alternate message of the email. This is
+                often displayed on slow or old browsers, or if the HTML message
+                is not provided.
+            cc: The list of email addresses to be cc'd.
+            bcc: The list of email addresses to be bcc'd.
+            attachments: The list of attachment file names.
+            signature: Whether the account signature should be added to the
+                message.
+            user_id: The address of the sending account. 'me' for the
+                default address associated with the account.
+
+        Returns:
+            The Message object representing the sent message.
+
+        Raises:
+            googleapiclient.errors.HttpError: There was an error executing the
+                HTTP request.
+
+        """
+
+        msg = self._create_message(
+            sender, to, subject, msg_html, msg_plain, cc=cc, bcc=bcc,
+            attachments=attachments, signature=signature, user_id=user_id
+        )
+
+        try:
+            req = self.service.users().messages().insert(user_id, body=msg)
+            res = req.execute()
+            return self._build_message_from_ref(user_id, res, 'reference')
+
+        except HttpError as error:
+            # Pass along the error
+            raise error
+
     def send_message(
         self,
         sender: str,
