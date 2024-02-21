@@ -168,7 +168,7 @@ class Gmail(object):
         )
 
         try:
-            req = self.service.users().messages().insert(user_id, body=msg)
+            req = self.service.users().messages().insert(userId=user_id, body=msg)
             res = req.execute()
             return self._build_message_from_ref(user_id, res, 'reference')
 
